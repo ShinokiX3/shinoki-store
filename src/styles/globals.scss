@@ -1,0 +1,24 @@
+@import './variables';
+
+body {
+	margin: 0;
+	padding: 0;
+
+	p, h1, h2, h3 {
+		margin: 0;
+		padding: 0;
+	}
+}
+
+.ju-al-center {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.disabled {
+	pointer-events: none;
+	cursor: default;
+	text-decoration: none;
+	opacity: 0.2 !important;
+}
