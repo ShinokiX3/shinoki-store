@@ -9,10 +9,10 @@ import { GetStaticProps, GetStaticPaths } from 'next'
 // use getServerSideProps instead getStatic props by porpose included categories and issues in rendering
 
 export const getStaticPaths: GetStaticPaths = async () => {
-	const response = await AmazonCategory.getAllCategories()
+	const response = await AmazonCategory.getAllCategories();
 
 	const paths = response.map(category => ({
-		params: { slug: category.id }
+		params: { slug: category.id || '' }
 	}))
 
 	return {
@@ -22,12 +22,9 @@ export const getStaticPaths: GetStaticPaths = async () => {
 }
 
 export const getStaticProps: GetStaticProps = async (context) => {
-	console.log(context);
-	
-	
 	const slug = context.params?.slug as string
 	
-	const response = await AmazonProduct.getByCategoryId(slug);
+	const response = await AmazonProduct.getByCategoryId(slug ? slug : '');
 	
 	if (!response) {
 		return {
@@ -45,7 +42,7 @@ interface ICategoryPage {
 	slug: string
 }
 
-const CategoryPage: React.FC<ICategoryPage> = ({ data, slug }) => {
+const CategoryPage: React.FC<ICategoryPage> = ({ data = [], slug }) => {
 
 	// TODO: change number slug value to string' category title
 

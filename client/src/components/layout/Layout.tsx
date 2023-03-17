@@ -19,7 +19,12 @@ const Layout: React.FC<ILayout> = ({ children }) => {
         setLoading(true);
         (async () => {
             const response = await AmazonCategory.getAllCategories()
-            setCategories(response)
+			console.log(response);
+			
+
+			if (response) {
+				setCategories(response)
+			} else setCategories([])
             setLoading(false);
         })()
 	}, []);

@@ -1,10 +1,10 @@
 import { IAmazonCategoryResponse, IAmazonParentCategoryResponse } from './../../types/categories.interface';
-import { axiosAmazon } from './../../api/amazoneApi';
+import { axiosAmazon } from '../../api/amazonApi';
 
 // TODO: Need to typed all of these categories
 
 const CATEGORIES = '/categories'
-const AMAZON_API_KEY = '5779EF638D444FCA90FFD9B56B71F0B6'
+const AMAZON_API_KEY = '7E04C94443284A7DB45B96F934269B8A'
 const AMAZON_DOMAIN = 'amazon.com'
 
 const withApiKey = () => {
@@ -15,13 +15,17 @@ const withApiKey = () => {
 
 export const AmazonCategory = {
 	async getAllCategories() {
-		const { data } = await axiosAmazon.get<IAmazonCategoryResponse>(withApiKey())
-        const { request_info: {success: success}, categories } = data;
+		try {
+            const { data } = await axiosAmazon.get<IAmazonCategoryResponse>(withApiKey())
+            const { request_info: {success: success}, categories } = data;
 
-        // TODO: Checkout for errors
-        
-        if (success) return categories
-        else return []
+            // TODO: Checkout for errors
+
+            if (data.request_info.success) return categories
+            else return []
+        } catch (error) {
+            return []
+        }
 	},
 
     async getCategory(id: string) {

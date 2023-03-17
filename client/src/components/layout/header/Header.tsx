@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 
 import styled from 'styled-components';
 
-import { Avatar } from 'antd';
-import { UserOutlined, ShoppingOutlined, MenuOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Avatar, Dropdown, MenuProps, Space } from 'antd';
+import { UserOutlined, ShoppingOutlined, MenuOutlined, LoadingOutlined, DownOutlined } from '@ant-design/icons';
 
 import { useActions } from '@/hooks/useActions';
 import { useTypedSelector } from '@/hooks/useTypedSelector';
@@ -11,6 +11,7 @@ import { useTypedSelector } from '@/hooks/useTypedSelector';
 import { useDebounce } from '@/hooks/useDebounce';
 import { AmazonProduct } from '@/services/Amazon/AmazonProduct';
 import Search from '@/components/ui/search/Search';
+import Cart from '@/components/ui/cart/Cart';
 
 const HeaderBlock = styled.header`
     display: flex;
@@ -41,6 +42,24 @@ const Logo = styled.span`
 const Nav = styled.nav`
     gap: 20px;
 `
+
+const items: MenuProps['items'] = [
+    {
+      label: <a href="https://www.antgroup.com">1st menu item</a>,
+      key: '0',
+    },
+    {
+      label: <a href="https://www.aliyun.com">2nd menu item</a>,
+      key: '1',
+    },
+    {
+      type: 'divider',
+    },
+    {
+      label: '3rd menu item',
+      key: '3',
+    },
+  ];
 
 const Header = () => {
     const [value, setValue] = useState<string>('');
@@ -86,7 +105,11 @@ const Header = () => {
             <Search value={value} setValue={setValue} data={searchResults} setData={setSearchResults} loading={loading} />
             
             <Nav className='ju-al-center'>
-                <ShoppingOutlined style={{display: 'flex', width: '30px', height: '30px'}} />
+                <Dropdown placement='bottomRight' trigger={['click']} arrow dropdownRender={() => <Cart /> }>
+                    <a onClick={(e) => e.preventDefault()}>
+                        <ShoppingOutlined style={{display: 'flex', width: '30px', height: '30px'}} />
+                    </a>
+                </Dropdown>
                 <Avatar size='large' icon={<UserOutlined />} />
             </Nav>
         </HeaderBlock>
