@@ -1,68 +1,101 @@
-import { useDebounce } from "@/hooks/useDebounce";
-import { NovaPoshta } from "@/services/NovaPoshta/NovaPoshta";
-import { EnvironmentOutlined } from "@ant-design/icons";
-import { Modal, TreeSelect } from "antd";
-import { useEffect, useState } from "react";
-import { Item } from "../Delivery";
+import { useDebounce } from '@/hooks/useDebounce';
+import { NovaPoshta } from '@/services/NovaPoshta/NovaPoshta';
+import { EnvironmentOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Modal, Spin, TreeSelect } from 'antd';
+import { useEffect, useState } from 'react';
+import { Item } from '../Delivery';
+import { useActions } from '@/hooks/useActions';
+import { useTypedSelector } from '@/hooks/useTypedSelector';
+import { IAddress } from '@/types/novaposhta.interface';
+import Spinner from '../../common/Spinner';
 
 const City = () => {
-    const [value, setValue] = useState('');
-    const [cities, setCities] = useState([]);
-    const [selectedCity, setSelectedCity] = useState('');
-    const [shouldShow, setShouldShow] = useState(false);
+	const [value, setValue] = useState('');
+	const [cities, setCities] = useState<IAddress[] | []>([]);
+	const [shouldShow, setShouldShow] = useState(false);
+	const [loading, setLoading] = useState(false);
 
-    const debouncedValue = useDebounce(value, 800);
+	const { setCity } = useActions();
+	const city = useTypedSelector((state) => state.order.city);
 
-    useEffect(() => {
-        (async () => {
-            if (debouncedValue) {
-                const respone = await NovaPoshta.searchByTerm(value);
-                setCities(respone.data[0]?.Addresses || []);
-            }
-        })()
-    }, [debouncedValue]);
+	const debouncedValue = useDebounce(value, 800);
 
-    return (
-        <>
-            <Item onClick={() => setShouldShow(true)}>
-                <EnvironmentOutlined />
-                <div>
-                    <p style={{color: 'gray'}}>Your city:</p>
-                    <p>{selectedCity || 'Choose you city'}</p>
-                </div>
-            </Item>
-            <Modal 
-                title="Choose your city" 
-                open={shouldShow} 
-                onOk={() => setShouldShow(false)} 
-                onCancel={() => setShouldShow(false)}
-            >
-                <TreeSelect 
-                    showSearch={true}
-                    style={{ width: '100%', top: 0 }}
-                    dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                    placeholder="City..."
-                    allowClear
-                    treeDefaultExpandAll
-                    value={value}
-                    onChange={setSelectedCity}
-                    onSearch={setValue}
-                    onClear={() => setCities([])}
-                    treeDataSimpleMode={true}
-                    treeData={
-                    cities.map((address, index) => 
-                        ({
-                            id: address, 
-                            pId: address.Present, 
-                            key: address.Present, 
-                            value: address.Present, 
-                            title: address.Present
-                        }))
-                    }
-                />
-            </Modal>
-        </>
-    )
-}
+	useEffect(() => {
+		(async () => {
+			if (debouncedValue) {
+				setLoading(true);
+				const response = await NovaPoshta.searchByTerm(value);
+				console.log(response);
 
-export default City
+				if (response.data.length > 0) {
+					setCities(response.data);
+				}
+				setLoading(false);
+			}
+		})();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [debouncedValue]);
+
+	const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
+
+	return (
+		<>
+			<Item onClick={() => setShouldShow(true)}>
+				<EnvironmentOutlined />
+				<div>
+					<p style={{ color: 'gray' }}>Your city:</p>
+					<p>{city.title || 'Choose you city'}</p>
+				</div>
+			</Item>
+			<Modal
+				title={
+					<div style={{ display: 'flex', alignItems: 'center' }}>
+						<h3>Choose your city</h3>
+						{loading ? (
+							<Spin indicator={antIcon} style={{ marginLeft: '10px' }} />
+						) : (
+							<></>
+						)}
+					</div>
+				}
+				open={shouldShow}
+				onOk={() => setShouldShow(false)}
+				onCancel={() => setShouldShow(false)}
+			>
+				<TreeSelect
+					showSearch={true}
+					style={{ width: '100%', top: 0 }}
+					dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+					placeholder="City..."
+					allowClear
+					treeDefaultExpandAll
+					value={value}
+					onChange={(value) => {
+						const [title, ref] = value.split('>');
+						setCity({ title: title, ref: ref });
+					}}
+					onSearch={setValue}
+					onClear={() => setCities([])}
+					treeDataSimpleMode={true}
+					treeData={cities.map(
+						(
+							{ Ref, AreaDescription, SettlementTypeDescription, Description },
+							index
+						) => {
+							const title = `${AreaDescription}, ${SettlementTypeDescription} ${Description}`;
+							return {
+								id: Ref,
+								pId: Description,
+								key: `${title}>${Ref}`,
+								value: `${title}>${Ref}`,
+								title: title,
+							};
+						}
+					)}
+				/>
+			</Modal>
+		</>
+	);
+};
+
+export default City;
